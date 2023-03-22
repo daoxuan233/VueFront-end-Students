@@ -47,6 +47,7 @@ export default{
   methods:{
 
     handleSelect(key,keyPath){
+      console.log("菜单点击事件",key)
       if(key != this.$route.path){
         this.$router.push(key);
       }
