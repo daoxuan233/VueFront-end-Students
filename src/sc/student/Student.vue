@@ -1,12 +1,23 @@
 <template>
   <div>
     <el-form :inline="true" ref="vForm" :model="searchFormData" label-position="right" class="demo-form-inline" label-width="80px">
-      <el-form-item label="课程名称" prop="name">
-        <el-input v-model="searchFormData.name" placeholder="课程名称"></el-input>
+      <el-form-item label="学生姓名" prop="name">
+        <el-input v-model="searchFormData.name" placeholder="学生姓名"></el-input>
       </el-form-item>
-      <!--      <el-form-item label="电话">
-              <el-input v-model="searchFormData.phone" placeholder="电话"></el-input>
-            </el-form-item>-->
+      <el-form-item label="电话">
+        <el-input v-model="searchFormData.phone" placeholder="电话"></el-input>
+      </el-form-item>
+      <el-form-item label="课程名称">
+        <el-select v-model="selectList" placeholder="请选择">
+          <el-option
+            v-for="(item,index) in options"
+            :key="index"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
+
       <el-form-item>
         <el-button type="primary" @click="searchSubmit">查询</el-button>
         <el-button type="primary" @click="searchResetFrom">重置</el-button>
@@ -47,6 +58,136 @@ export default{
   name: "Student",
   components:{
 
+  },
+  data() {
+    return {
+      formRules:{},
+      formLabelWidth:'120px',
+      formDate:{},
+      options:{
+
+      },
+
+      dialogTitle: null, // 弹窗标题
+      dialogVisible: false, // 弹窗是否显示
+
+      searchFormData: {
+      },
+      tableData:[{
+        /*name:"sb",phone: "Phone",avatar: "Avatar",*/
+      }],
+      pageObj: {
+        pageSize:10,
+        total:0,
+        currentPage:1
+      },
+      selectList: [],
+    }
+  },
+  computed:{
+  // 将
+  },
+  methods: {
+    openAddWindow(){
+      this.dialogVisible = true;
+    },
+    search(){
+      let that = this
+      this.$refs['vForm'].validate(valid => {
+        if (!valid) return
+        console.log(that.searchFormData)
+        let params = Object.assign(that.searchFormData, {current: that.pageObj.currentPage,
+          size: that.pageObj.pageSize})
+        console.log("甩给后端：",params)
+        axios.get('/api/score/scStudent/list', {
+          params: params
+        }).then((resp) => {
+          console.log("-----------",resp.data)
+          if (resp.data.code === '200') {
+            console.log("我是梅豪的大爹asdasd",resp.data.data.records)
+            // 将后端传的数组的className一个一个push到selectList中
+            that.selectList = [];
+            for (let i = 0; i < resp.data.data.records.length; i++) {
+              that.selectList.push(resp.data.data.records[i].className)
+            }
+            console.log("selectList",that.selectList)
+            that.tableData = resp.data.data.records //你可以在这里进行数据处理
+            that.pageObj.total = resp.data.data.total //将后端数据的total赋值给pageObj.total
+          }
+        }).catch((err) => { //这里是处理错误的
+          console.log(err)
+        })
+      })
+      return false
+    },
+    SelsectClass(){
+
+    },
+    // 查询
+    searchSubmit() {
+      console.log("我是梅豪的大爹")
+      this.search()
+
+    },
+    // 每页显示条数改变时触发
+    handleSzieChange(pageSize) {
+      this.pageObj.currentPage = 1
+      this.pageObj.pageSize = pageSize
+      this.search()
+    },
+    // 重置表单
+    searchResetFrom() {
+      this.$refs['vForm'].resetFields()
+      this.search()
+    },
+    // 当前页数改变时触发
+    handleCurrentChange(currentPage) {
+      this.pageObj.currentPage = currentPage
+      this.search()
+    },
+
+    // 新增
+    saveFormData(){
+      this.$refs['formDate'].validate(valid => {
+        if (!valid) return
+        console.log("提交的数据",this.formDate)
+        if (this.formDate.id || this.formDate.id === 0){
+          axios.put('/api/score/scTeacher/update', this.formDate).then((resp) => {
+            console.log("-----------",resp.data)
+            if (resp.data.code === '200') {
+              this.$message({
+                message: '修改成功',
+                type: 'success'
+              });
+              this.dialogVisible = false
+              this.search()
+            }
+          }).catch((err) => { //这里是处理错误的
+            console.log(err)
+          })
+        } else {
+          axios.post('/api/score/scTeacher/add', this.formDate).then((resp) => {
+            console.log("-----------",resp.data)
+            if (resp.data.code === '200') {
+              this.$message({
+                message: '新增成功',
+                type: 'success'
+              });
+              this.dialogVisible = false
+              this.search()
+            }
+          }).catch((err) => { //这里是处理错误的
+            console.log(err)
+          })
+        }
+      })
+      this.dialogVisible = false
+    }
   }
 }
 </script>
+
+<style>
+
+</style>
+

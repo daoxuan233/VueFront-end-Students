@@ -12,6 +12,37 @@
         <el-button type="primary" @click="searchResetFrom">重置</el-button>
       </el-form-item>
     </el-form>
+
+    <div style="background-color:gray">
+      <el-button type="primary" @click="openAddWindow">添加</el-button>
+    </div>
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible"
+               :close-on-click-modal="false"
+               :destroy-on-close="true"
+               width="30%">
+      <div>
+        <el-form :model="formDate" :rules="formRules" ref="formDate">
+          <el-form-item label="id" :label-width="formLabelWidth" prop="id">
+            <el-input v-model="formDate.id" placeholder="id" autocomplete="off" :disabled="true"></el-input>
+          </el-form-item>
+          <el-form-item label="教师姓名" :label-width="formLabelWidth" prop="name">
+            <el-input v-model="formDate.name" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="电话" :label-width="formLabelWidth" prop="phone">
+            <el-input v-model="formDate.phone" autocomplete="off" ></el-input>
+          </el-form-item>
+          <!--  头像    -->
+        </el-form>
+      </div>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveFormData">确 定</el-button>
+      </span>
+    </el-dialog>
+
+
+
     <el-table :data="tableData" style="width: auto">
       <el-table-column prop="name" label="姓名" width="">
       </el-table-column>
@@ -28,7 +59,7 @@
       <el-table-column fixed="right" label="操作" width="100">
         <template slot-scope="scope">
           <el-button @click="$event => openEditWindow(scope.row.id)" type="text" size="small">编辑</el-button>
-          <el-button @click="$event => delectById(scope.row.id)" type="text" size="small">编辑</el-button>
+          <el-button @click="$event => delectById(scope.row.id)" type="text" size="small">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -49,6 +80,22 @@ export default {
   },
   data() {
     return {
+      formRules:{ // 校验
+        name: [
+          { required: true, message: '请输入教师姓名', trigger: 'blur' }, // 必填
+          { min: 2, max: 10, message: '长度在 2 到 10 个字符', trigger: 'blur' } // 长度
+        ],
+        phone: [ // 电话 正则表达式
+          { required: true, message: '请输入电话', trigger: 'blur' }, // 必填
+          { pattern: /^1[3456789]\d{9}$/, message: '请输入正确的电话号码', trigger: 'blur' }
+        ],
+      },
+      formLabelWidth:'120px',
+      formDate:{},
+
+      dialogTitle: null, // 弹窗标题
+      dialogVisible: false, // 弹窗是否显示
+
       searchFormData: {
       },
       tableData:[{
@@ -62,6 +109,9 @@ export default {
     }
   },
   methods: {
+    openAddWindow(){
+      this.dialogVisible = true;
+    },
     search(){
       let that = this
       this.$refs['vForm'].validate(valid => {
@@ -106,6 +156,44 @@ export default {
       this.pageObj.currentPage = currentPage
       this.search()
     },
+
+    // 新增
+    saveFormData(){
+      this.$refs['formDate'].validate(valid => {
+        if (!valid) return
+        console.log("提交的数据",this.formDate)
+        if (this.formDate.id || this.formDate.id === 0){
+          axios.put('/api/score/scTeacher/update', this.formDate).then((resp) => {
+            console.log("-----------",resp.data)
+            if (resp.data.code === '200') {
+              this.$message({
+                message: '修改成功',
+                type: 'success'
+              });
+              this.dialogVisible = false
+              this.search()
+            }
+          }).catch((err) => { //这里是处理错误的
+            console.log(err)
+          })
+        } else {
+          axios.post('/api/score/scTeacher/add', this.formDate).then((resp) => {
+            console.log("-----------",resp.data)
+            if (resp.data.code === '200') {
+              this.$message({
+                message: '新增成功',
+                type: 'success'
+              });
+              this.dialogVisible = false
+              this.search()
+            }
+          }).catch((err) => { //这里是处理错误的
+            console.log(err)
+          })
+        }
+      })
+      this.dialogVisible = false
+    }
   }
 }
 </script>
