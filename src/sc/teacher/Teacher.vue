@@ -2,7 +2,7 @@
   <div>
     <el-form :inline="true" ref="vForm" :model="searchFormData" label-position="right" class="demo-form-inline" label-width="80px">
       <el-form-item label="教师姓名">
-        <el-input v-model="searchFormData.user" placeholder="教师姓名"></el-input>
+        <el-input v-model="searchFormData.name" placeholder="教师姓名"></el-input>
       </el-form-item>
       <el-form-item label="电话">
         <el-input v-model="searchFormData.phone" placeholder="电话"></el-input>
@@ -19,7 +19,10 @@
       </el-table-column>
       <el-table-column prop="avatar" label="头像" width="">
         <template slot-scope="scope">
-          <span>{{scope.row.avatar}}</span>
+<!--          <span>{{scope.row.avatar}}</span>-->
+<!--  http://localhost:8082/api/file/download/Snipaste_2023-03-28_14-14-40.png ==> http://localhost:8080/file/download/Snipaste_2023-03-28_14-14-40.png-->
+          <el-avatar v-if="scope.row.avatar" :src="'/api/file/download/'+scope.row.avatar" ></el-avatar>
+          <el-avatar v-else src=""></el-avatar>
         </template>
       </el-table-column>
       <el-table-column fixed="right" label="操作" width="100">
@@ -49,7 +52,7 @@ export default {
       searchFormData: {
       },
       tableData:[{
-        name:"sb",phone: "Phone",avatar: "Avatar",
+        /*name:"sb",phone: "Phone",avatar: "Avatar",*/
       }],
       pageObj: {
         pageSize:10,
@@ -66,6 +69,7 @@ export default {
         console.log(that.searchFormData)
         let params = Object.assign(that.searchFormData, {current: that.pageObj.currentPage,
           size: that.pageObj.pageSize})
+        console.log("甩给后端：",params)
         axios.get('/api/score/scTeacher/list', {
           params: params
         }).then((resp) => {
@@ -80,18 +84,24 @@ export default {
       })
       return false
     },
+    // 查询
     searchSubmit() {
       console.log("我是梅豪的大爹")
       this.search()
+
     },
+    // 每页显示条数改变时触发
     handleSzieChange(pageSize) {
       this.pageObj.currentPage = 1
       this.pageObj.pageSize = pageSize
       this.search()
     },
+    // 重置表单
     searchResetFrom() {
-      console.log("sklaihdsilahfilsaj")
+      this.$refs['vForm'].resetFields()
+      this.search()
     },
+    // 当前页数改变时触发
     handleCurrentChange(currentPage) {
       this.pageObj.currentPage = currentPage
       this.search()
