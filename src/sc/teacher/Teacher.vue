@@ -1,10 +1,10 @@
 <template>
   <div>
     <el-form :inline="true" ref="vForm" :model="searchFormData" label-position="right" class="demo-form-inline" label-width="80px">
-      <el-form-item label="教师姓名">
+      <el-form-item label="教师姓名" prop="name">
         <el-input v-model="searchFormData.name" placeholder="教师姓名"></el-input>
       </el-form-item>
-      <el-form-item label="电话">
+      <el-form-item label="电话" prop="phone">
         <el-input v-model="searchFormData.phone" placeholder="电话"></el-input>
       </el-form-item>
       <el-form-item>

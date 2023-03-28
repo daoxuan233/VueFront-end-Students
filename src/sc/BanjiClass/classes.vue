@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-form :inline="true" ref="vForm" :model="searchFormData" label-position="right" class="demo-form-inline" label-width="80px">
-      <el-form-item label="班级名称">
+      <el-form-item label="班级名称" prop="name">
         <el-input v-model="searchFormData.name" placeholder="班级名称"></el-input>
       </el-form-item>
 <!--      <el-form-item label="电话">
