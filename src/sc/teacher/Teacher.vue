@@ -49,7 +49,7 @@
       <el-table-column prop="phone" label="手机号" width="">
       </el-table-column>
       <el-table-column prop="avatar" label="头像" width="">
-        <template slot-scope="scope">
+        <template slot-scope="scope">  <!--插槽-->
 <!--          <span>{{scope.row.avatar}}</span>-->
 <!--  http://localhost:8082/api/file/download/Snipaste_2023-03-28_14-14-40.png ==> http://localhost:8080/file/download/Snipaste_2023-03-28_14-14-40.png-->
           <el-avatar v-if="scope.row.avatar" :src="'/api/file/download/'+scope.row.avatar" ></el-avatar>
@@ -60,6 +60,9 @@
         <template slot-scope="scope">
           <el-button @click="$event => openEditWindow(scope.row.id)" type="text" size="small">编辑</el-button>
           <el-button @click="$event => delectById(scope.row.id)" type="text" size="small">删除</el-button>
+
+          <!--scope.row.id,指代一行数据-->
+
         </template>
       </el-table-column>
     </el-table>
@@ -156,13 +159,13 @@ export default {
       this.pageObj.currentPage = currentPage
       this.search()
     },
-
     // 新增
     saveFormData(){
+      this.dialogVisible = true
       this.$refs['formDate'].validate(valid => {
         if (!valid) return
         console.log("提交的数据",this.formDate)
-        if (this.formDate.id || this.formDate.id === 0){
+        if (this.formDate.id || this.formDate.id === 0){ // 修改
           axios.put('/api/score/scTeacher/update', this.formDate).then((resp) => {
             console.log("-----------",resp.data)
             if (resp.data.code === '200') {
@@ -176,7 +179,7 @@ export default {
           }).catch((err) => { //这里是处理错误的
             console.log(err)
           })
-        } else {
+        } else { // 新增
           axios.post('/api/score/scTeacher/add', this.formDate).then((resp) => {
             console.log("-----------",resp.data)
             if (resp.data.code === '200') {
@@ -193,7 +196,59 @@ export default {
         }
       })
       this.dialogVisible = false
-    }
+    },
+    // 删除 传入id
+    delectById(id){
+      axios.delete('/api/score/scTeacher/delete/'+id).then((resp) => {
+        console.log("delectById***",resp.data) // 打印后台返回的数据
+        if (resp.data.code === '200') {
+          this.$message({
+            message: resp.data.description,/*'删除成功'*/
+            type: 'success'
+          });
+          this.search()
+        }
+      }).catch((err) => { //这里是处理错误的
+        console.log(err)
+      })
+    },
+    // 编辑
+    openEditWindow(id){
+      let that = this
+      this.dialogVisible = true
+      that.dialogTitle = '编辑'
+      axios.get(`/api/score/scTeacher/get/${id}`).then((resp) => { // 请求的是后端的接口 /api/score/scTeacher/1 1是传入的id
+        console.log("openEditWindows:",resp.data)
+        if (resp.data.code === '200') {
+          that.formDate = resp.data.data
+        }
+        this.search()
+      }).catch((err) => { //这里是处理错误的
+        console.log("--------------------",err)
+      })
+    },
+    search(){ //查询
+      let that = this
+      this.$refs['vForm'].validate(valid => {
+        if (!valid) return
+        console.log(that.searchFormData)
+        let params = Object.assign(that.searchFormData, {current: that.pageObj.currentPage,
+          size: that.pageObj.pageSize})
+
+        axios.get('/api/score/scClass/list', {
+          params: params
+        }).then((resp) => {
+          console.log("-----------",resp.data)
+          if (resp.data.code === '200') {
+            that.tableData = resp.data.data.records //你可以在这里进行数据处理
+            that.pageObj.total = resp.data.data.total //将后端数据的total赋值给pageObj.total
+          }
+        }).catch((err) => { //这里是处理错误的
+          console.log(err)
+        })
+      })
+      return false
+    },
   }
 }
 </script>

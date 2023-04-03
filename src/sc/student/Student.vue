@@ -7,14 +7,9 @@
       <el-form-item label="电话">
         <el-input v-model="searchFormData.phone" placeholder="电话"></el-input>
       </el-form-item>
-      <el-form-item label="课程名称">
-        <el-select v-model="selectList" placeholder="请选择">
-          <el-option
-            v-for="(item,index) in options"
-            :key="index"
-            :label="item.label"
-            :value="item.value">
-          </el-option>
+      <el-form-item label="课程名称" >
+        <el-select v-model="selectList" placeholder="请选择" class="#selectListDome">
+          <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
         </el-select>
       </el-form-item>
 
@@ -26,8 +21,9 @@
     <el-table :data="tableData" style="width: auto">
       <el-table-column prop="name" label="课程名称" width="">
       </el-table-column>
-      <el-table-column prop="phone" label="创建时间" width="">
-      </el-table-column>
+      <el-table-column prop="phone" label="联系方式" width=""></el-table-column>
+      <el-table-column prop="className" label="所在班级" width=""></el-table-column>
+
       <!--      <el-table-column prop="avatar" label="头像" width="">
               <template slot-scope="scope">
                 &lt;!&ndash;          <span>{{scope.row.avatar}}</span>&ndash;&gt;
@@ -64,9 +60,11 @@ export default{
       formRules:{},
       formLabelWidth:'120px',
       formDate:{},
-      options:{
+      options:[
+        {
 
-      },
+        }
+      ],
 
       dialogTitle: null, // 弹窗标题
       dialogVisible: false, // 弹窗是否显示
@@ -77,15 +75,17 @@ export default{
         /*name:"sb",phone: "Phone",avatar: "Avatar",*/
       }],
       pageObj: {
-        pageSize:10,
-        total:0,
-        currentPage:1
+        pageSize:10, // 每页显示条数
+        total:0, // total 总条数
+        currentPage:1 // 当前页数
       },
-      selectList: [],
     }
   },
   computed:{
   // 将
+  },
+  mounted() { // 页面加载时触发
+    this.selectList();
   },
   methods: {
     openAddWindow(){
@@ -105,11 +105,6 @@ export default{
           console.log("-----------",resp.data)
           if (resp.data.code === '200') {
             console.log("我是梅豪的大爹asdasd",resp.data.data.records)
-            // 将后端传的数组的className一个一个push到selectList中
-            that.selectList = [];
-            for (let i = 0; i < resp.data.data.records.length; i++) {
-              that.selectList.push(resp.data.data.records[i].className)
-            }
             console.log("selectList",that.selectList)
             that.tableData = resp.data.data.records //你可以在这里进行数据处理
             that.pageObj.total = resp.data.data.total //将后端数据的total赋值给pageObj.total
@@ -119,9 +114,6 @@ export default{
         })
       })
       return false
-    },
-    SelsectClass(){
-
     },
     // 查询
     searchSubmit() {
@@ -182,12 +174,52 @@ export default{
         }
       })
       this.dialogVisible = false
-    }
+    },
+    // 删除 传入id
+    delectById(id){
+      axios.delete('/api/score/scTeacher/delete/'+id).then((resp) => {
+        console.log("delectById***",resp.data) // 打印后台返回的数据
+        if (resp.data.code === '200') {
+          this.$message({
+            message: resp.data.description,/*'删除成功'*/
+            type: 'success'
+          });
+          this.search()
+        }
+      }).catch((err) => { //这里是处理错误的
+        console.log(err)
+      })
+    },
+    // 将后端的name和id传入前端select下拉框
+    selectList(){
+      let that = this
+      let params = Object.assign(that.searchFormData, {current: 1, // 将pageObj的currentPage赋值给后端的current
+        size: 100})
+      axios.get('/api/score/scClass/list', {
+        params: params
+      }).then((resp) => {
+        console.log("-----------",resp.data)
+        if (resp.data.code === '200') {
+          // 将后端的name和id传入前端select下拉框
+          that.options = resp.data.data.records.map((item) => {
+            return {
+              value: item.id,
+              label: item.name
+            }
+          })
+        }
+      }).catch((err) => { //这里是处理错误的
+        console.log("傻逼VUE，操",err)
+      })
+    },
+
   }
 }
 </script>
 
 <style>
+
+
 
 </style>
 
