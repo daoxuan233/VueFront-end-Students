@@ -30,8 +30,11 @@
           </el-form-item>
           <el-form-item label="电话" :label-width="formLabelWidth" prop="phone">
             <el-input v-model="formDate.phone" autocomplete="off" ></el-input>
-          </el-form-item>
+          </el-form-item  >
           <!--  头像    -->
+          <el-form-item label="用户头像" :label-width="formLabelWidth">
+            <Upload :uploadObject = "uploadObject"/>
+          </el-form-item>
         </el-form>
       </div>
 
@@ -76,49 +79,57 @@
 
 <script>
 import axios from "axios";
-
+import Upload from "../../components/Upload.vue";
 export default {
   name:"Teacher",
   components:{
+    Upload
   },
-  data() {
+  data: function () {
     return {
-      formRules:{ // 校验
+      // 上传文件内容
+      uploadObject: {
+        fileName: null
+      },
+      formRules: { // 校验
         name: [
-          { required: true, message: '请输入教师姓名', trigger: 'blur' }, // 必填
-          { min: 2, max: 10, message: '长度在 2 到 10 个字符', trigger: 'blur' } // 长度
+          {required: true, message: '请输入教师姓名', trigger: 'blur'}, // 必填
+          {min: 2, max: 10, message: '长度在 2 到 10 个字符', trigger: 'blur'} // 长度
         ],
         phone: [ // 电话 正则表达式
-          { required: true, message: '请输入电话', trigger: 'blur' }, // 必填
-          { pattern: /^1[3456789]\d{9}$/, message: '请输入正确的电话号码', trigger: 'blur' }
+          {required: true, message: '请输入电话', trigger: 'blur'}, // 必填
+          {message: '请输入正确的电话号码', pattern: /^1[3456789]\d{9}$/, trigger: 'blur'}
         ],
       },
-      formLabelWidth:'120px',
-      formDate:{},
+      formLabelWidth: '120px',
+      formDate: {},
 
       dialogTitle: null, // 弹窗标题
       dialogVisible: false, // 弹窗是否显示
 
-      searchFormData: {
-      },
-      tableData:[{
+      searchFormData: {},
+      tableData: [{
         /*name:"sb",phone: "Phone",avatar: "Avatar",*/
       }],
       pageObj: {
-        pageSize:10,
-        total:0,
-        currentPage:1
+        pageSize: 10,
+        total: 0,
+        currentPage: 1
       }
     }
   },
   methods: {
     openAddWindow(){
       this.dialogVisible = true;
+      this.dialogTitle = "添加教师";
+      this.formDate = {}
+      this.uploadObject.fileName = null;
     },
     search(){
       let that = this
       this.$refs['vForm'].validate(valid => {
         if (!valid) return
+        this.formDate.avatar = this.uploadObject.fileName;
         console.log(that.searchFormData)
         let params = Object.assign(that.searchFormData, {current: that.pageObj.currentPage,
           size: that.pageObj.pageSize})
@@ -137,11 +148,11 @@ export default {
       })
       return false
     },
+
     // 查询
     searchSubmit() {
       console.log("我是梅豪的大爹")
       this.search()
-
     },
     // 每页显示条数改变时触发
     handleSzieChange(pageSize) {
@@ -164,6 +175,7 @@ export default {
       this.dialogVisible = true
       this.$refs['formDate'].validate(valid => {
         if (!valid) return
+        this.formDate.avatar = this.uploadObject.fileName;
         console.log("提交的数据",this.formDate)
         if (this.formDate.id || this.formDate.id === 0){ // 修改
           axios.put('/api/score/scTeacher/update', this.formDate).then((resp) => {
@@ -221,33 +233,12 @@ export default {
         console.log("openEditWindows:",resp.data)
         if (resp.data.code === '200') {
           that.formDate = resp.data.data
+          that.uploadObject.fileName = that.formDate.avatar
         }
         this.search()
       }).catch((err) => { //这里是处理错误的
         console.log("--------------------",err)
       })
-    },
-    search(){ //查询
-      let that = this
-      this.$refs['vForm'].validate(valid => {
-        if (!valid) return
-        console.log(that.searchFormData)
-        let params = Object.assign(that.searchFormData, {current: that.pageObj.currentPage,
-          size: that.pageObj.pageSize})
-
-        axios.get('/api/score/scClass/list', {
-          params: params
-        }).then((resp) => {
-          console.log("-----------",resp.data)
-          if (resp.data.code === '200') {
-            that.tableData = resp.data.data.records //你可以在这里进行数据处理
-            that.pageObj.total = resp.data.data.total //将后端数据的total赋值给pageObj.total
-          }
-        }).catch((err) => { //这里是处理错误的
-          console.log(err)
-        })
-      })
-      return false
     },
   }
 }

@@ -209,7 +209,7 @@ export default{
           })
         }
       }).catch((err) => { //这里是处理错误的
-        console.log("傻逼VUE，操",err)
+        console.log("烦了，操",err)
       })
     },
 
