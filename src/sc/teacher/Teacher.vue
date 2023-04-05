@@ -175,14 +175,14 @@ export default {
       this.dialogVisible = true
       this.$refs['formDate'].validate(valid => {
         if (!valid) return
-        this.formDate.avatar = this.uploadObject.fileName;
+        this.formDate.avatar = this.uploadObject.fileName; // 上传文件名
         console.log("提交的数据",this.formDate)
         if (this.formDate.id || this.formDate.id === 0){ // 修改
           axios.put('/api/score/scTeacher/update', this.formDate).then((resp) => {
             console.log("-----------",resp.data)
             if (resp.data.code === '200') {
               this.$message({
-                message: '修改成功',
+                message: resp.data.description,
                 type: 'success'
               });
               this.dialogVisible = false
@@ -196,7 +196,7 @@ export default {
             console.log("-----------",resp.data)
             if (resp.data.code === '200') {
               this.$message({
-                message: '新增成功',
+                message: resp.data.description,
                 type: 'success'
               });
               this.dialogVisible = false

@@ -15,6 +15,11 @@ export default {
   props:{
     uploadObject:{
       type :Object,
+      default(){
+        return {
+          fileName: null
+        }
+      }
     }
   },
   name: "Upload",
@@ -24,6 +29,19 @@ export default {
       download: "/api/file/download/", //需要与后端服务器对应
       imageUrlShow: false
     };
+  },
+  watch: {
+    uploadObject: {
+      handler: function (val, oldVal) {
+        console.log("watch==>",val)
+        if(val.fileName){
+          this.imageUrlShow=true;
+        }else{
+          this.imageUrlShow=false;
+        }
+      },
+      deep: true
+    }
   },
   methods: {
     //文件上传成功时调用
@@ -84,6 +102,10 @@ export default {
 }
 /*虚线*/
    .el-icon-plus{
-
+      border: 1px dashed #d9d9d9;
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
    }
 </style>
