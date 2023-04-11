@@ -11,7 +11,7 @@
       <el-form-item label="所在班级" prop="className">
         <!--        <el-input v-model="searchFormData.className" placeholder="所在班级"></el-input>-->
         <!--        根據班級查詢學生-->
-        <el-select v-model="value" placeholder="请选择">
+        <el-select v-model="classXueS" placeholder="请选择">
           <el-option
             v-for="item in studentList"
             :key="item.value"
@@ -44,13 +44,19 @@
           <el-form-item label="联系方式" :label-width="formLabelWidth" prop="phone">
             <el-input v-model="formDate.phone" autocomplete="off"></el-input>
           </el-form-item>
+          <el-form-item label="所在班级" :label-width="formLabelWidth" prop="phone">
+            <el-select v-model="classXueS" placeholder="请选择">
+              <el-option
+                v-for="item in studentList"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
           <!--  头像    -->
           <el-form-item label="用户头像" :label-width="formLabelWidth">
             <Upload :uploadObject="uploadObject"/>
-          </el-form-item>
-
-          <el-form-item label="所在班级" :label-width="formLabelWidth" prop="phone">
-            <el-input v-model="formDate.className" autocomplete="off"></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -127,11 +133,11 @@ export default {
         currentPage: 1 // 当前页数
       },
       studentList: [],
-      value: ''
+      classXueS: '',
     }
   },
   computed: {
-    // 将
+
   },
   mounted() { // 页面加载时触发
     this.selectList();
@@ -157,7 +163,6 @@ export default {
           console.log("-----------", resp.data)
           if (resp.data.code === '200') {
             console.log("我是梅豪的大爹asdasd", resp.data.data.records)
-            console.log("selectList", that.selectList)
             that.tableData = resp.data.data.records //你可以在这里进行数据处理
             that.pageObj.total = resp.data.data.total //将后端数据的total赋值给pageObj.total
           }
@@ -167,139 +172,148 @@ export default {
       })
       return false
     },
+    /**
+     * 清空数据
+     */
     searchResetFromStu() {
       // 清空选中的班级和学生列表
-      this.value = '';
+      this.classXueS = '';
       this.studentList = [];
     },
     // 根據班級查詢學生
     searchSubmit() {
       // 获取选中的班级
-      const selectedClass = this.value;
+      const selectedClass = this.classXueS;
       if (selectedClass === '') {
         Message({
           message: '请选择班级',
           type: 'warning'
         });
-        return;
-      }else {
+      } else {
         // 使用Axios发送HTTP请求到后端API接口
         axios.get(`/api/score/scStudent/getByClassId?classId=${selectedClass}`).then(response => {
-          // 将返回的学生列表数据赋值给studentList
           this.tableData = response.data.data;
-          console.log("studentList", this.studentList)
+          console.log("tableData====>", this.tableData)
         });
       }
-  },
-  // 每页显示条数改变时触发
-  handleSzieChange(pageSize) {
-    this.pageObj.currentPage = 1
-    this.pageObj.pageSize = pageSize
-    this.search()
-  },
-  // 重置表单
-  searchResetFrom() {
-    this.$refs['vForm'].resetFields()
-    this.search()
-  },
-  // 当前页数改变时触发
-  handleCurrentChange(currentPage) {
-    this.pageObj.currentPage = currentPage
-    this.search()
-  },
-
-  // 新增
-  saveFormData() {
-    this.$refs['formDate'].validate(valid => {
-      if (!valid) return
-      console.log("提交的数据", this.formDate)
-      if (this.formDate.id || this.formDate.id === 0) {
-        axios.put('/api/score/scStudent/update', this.formDate).then((resp) => {
-          console.log("-----------", resp.data)
-          if (resp.data.code === '200') {
-            this.$message({
-              message: '修改成功',
-              type: 'success'
-            });
-            this.dialogVisible = false
-            this.search()
-          }
-        }).catch((err) => { //这里是处理错误的
-          console.log(err)
-        })
-      } else {
-        axios.post('/api/score/scStudent/add', this.formDate).then((resp) => {
-          console.log("-----------", resp.data)
-          if (resp.data.code === '200') {
-            this.$message({
-              message: '新增成功',
-              type: 'success'
-            });
-            this.dialogVisible = false
-            this.search()
-          }
-        }).catch((err) => { //这里是处理错误的
-          console.log(err)
-        })
-      }
-    })
-    this.dialogVisible = false
-  },
-  // 删除 传入id
-  delectById(id) {
-    axios.delete('/api/score/scStudent/delete/' + id).then((resp) => {
-      console.log("delectById***", resp.data) // 打印后台返回的数据
-      if (resp.data.code === '200') {
-        this.$message({
-          message: resp.data.description,/*'删除成功'*/
-          type: 'success'
-        });
-        this.search()
-      }
-    }).catch((err) => { //这里是处理错误的
-      console.log(err)
-    })
-  },
-  // 将后端的name和id传入前端select下拉框
-  selectList() {
-    let that = this
-    let params = Object.assign(that.searchFormData, {
-      current: 1, // 将pageObj的currentPage赋值给后端的current
-      size: 100
-    })
-    axios.get('/api/score/scClass/list', {
-      params: params
-    }).then((resp) => {
-      console.log("-----------", resp.data)
-      if (resp.data.code === '200') {
-        // 将后端的name和id传入前端select下拉框
-        that.studentList = resp.data.data.records.map((item) => {
-          return {
-            value: item.id,
-            label: item.name
-          }
-        })
-      }
-    }).catch((err) => { //这里是处理错误的
-      console.log("烦了，操", err)
-    })
-  },
-  openEditWindow(id) {
-    let that = this
-    this.dialogVisible = true
-    that.dialogTitle = '编辑'
-    axios.get(`/api/score/scStudent/get/${id}`).then((resp) => { // 请求的是后端的接口 /api/score/scTeacher/1 1是传入的id
-      console.log("openEditWindows:", resp.data)
-      if (resp.data.code === '200') {
-        that.formDate = resp.data.data
-        that.uploadObject.fileName = that.formDate.avatar
-      }
+    },
+    // 每页显示条数改变时触发
+    handleSzieChange(pageSize) {
+      this.pageObj.currentPage = 1
+      this.pageObj.pageSize = pageSize
       this.search()
-    }).catch((err) => { //这里是处理错误的
-      console.log("--------------------", err)
-    })
-  },
-}
+    },
+    // 重置表单
+    searchResetFrom() {
+      this.$refs['vForm'].resetFields()
+      this.search()
+    },
+    // 当前页数改变时触发
+    handleCurrentChange(currentPage) {
+      this.pageObj.currentPage = currentPage
+      this.search()
+    },
+
+    // 新增
+    saveFormData() {
+      this.dialogVisible = true;
+      this.$refs['formDate'].validate(valid => {
+        if (!valid) return
+        this.formDate.avatar = this.uploadObject.fileName; // 上传文件名
+        this.formDate.className = this.classXueS;
+        console.log("提交的数据", this.formDate)
+        if (this.formDate.id || this.formDate.id === 0) {
+          axios.put('/api/score/scStudent/update', this.formDate).then((resp) => {
+            console.log("-----------", resp.data)
+            if (resp.data.code === '200') {
+              this.$message({
+                message: '修改成功',
+                type: 'success'
+              });
+              this.dialogVisible = false
+              this.search()
+            }
+          }).catch((err) => { //这里是处理错误的
+            console.log(err)
+          })
+          // 修改
+        } else {
+          axios.post('/api/score/scStudent/add',this.formDate).then((resp) => {
+            console.log("-----------", resp.data)
+            if (resp.data.code === '200') {
+              this.$message({
+                message: '新增成功',
+                type: 'success'
+              });
+              this.dialogVisible = false
+              this.search()
+            }
+          }).catch((err) => { //这里是处理错误的
+            console.log(err)
+          })
+        }
+      })
+      this.dialogVisible = false
+    },
+    // 删除 传入id
+    delectById(id) {
+      axios.delete('/api/score/scStudent/delete/' + id).then((resp) => {
+        console.log("delectById***", resp.data) // 打印后台返回的数据
+        if (resp.data.code === '200') {
+          this.$message({
+            message: resp.data.description,/*'删除成功'*/
+            type: 'success'
+          });
+          this.search()
+        }
+      }).catch((err) => { //这里是处理错误的
+        console.log(err)
+      })
+    },
+    // 将后端的name和id传入前端select下拉框
+    selectList() {
+      let that = this
+      let params = Object.assign(that.searchFormData, {
+        current: 1, // 将pageObj的currentPage赋值给后端的current
+        size: 100
+      })
+      axios.get('/api/score/scClass/list', {
+        params: params
+      }).then((resp) => {
+        console.log("-----------", resp.data)
+        if (resp.data.code === '200') {
+          // 将后端的name和id传入前端select下拉框
+          that.studentList = resp.data.data.records.map((item) => {
+            return {
+              value: item.id,
+              label: item.name
+            }
+          })
+        }
+      }).catch((err) => { //这里是处理错误的
+        console.log("烦了，操", err)
+      })
+    },
+    /**
+     * 打开编辑窗口
+     * @param id  编辑的id
+     */
+    openEditWindow(id) {
+      let that = this
+      this.dialogVisible = true
+      that.dialogTitle = '编辑'
+      axios.get(`/api/score/scStudent/get/${id}`).then((resp) => { // 请求的是后端的接口 /api/score/scTeacher/1 1是传入的id
+        console.log("openEditWindows:", resp.data)
+        if (resp.data.code === '200') {
+          that.formDate = resp.data.data
+          that.uploadObject.fileName = that.formDate.avatar
+        }
+        this.search()
+      }).catch((err) => { //这里是处理错误的
+        console.log("--------------------", err)
+      })
+    },
+  }
 }
 </script>
 

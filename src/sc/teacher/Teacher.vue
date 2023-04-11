@@ -12,7 +12,7 @@
         <el-button type="primary" @click="searchResetFrom">重置</el-button>
       </el-form-item>
     </el-form>
-
+<!--新增窗口-->
     <div style="background-color:gray">
       <el-button type="primary" @click="openAddWindow">添加</el-button>
     </div>
@@ -117,6 +117,9 @@ export default {
         currentPage: 1
       }
     }
+  },
+  mounted() { // 页面加载时触发
+    this.search();
   },
   methods: {
     openAddWindow(){

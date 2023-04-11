@@ -36,7 +36,7 @@ export default {
   height: 100%;
 }
 .body{
-  background-color: #42b983;
+  background-color: rgb(129,216,208);
   height: 100%;
   width: 100%;
 }

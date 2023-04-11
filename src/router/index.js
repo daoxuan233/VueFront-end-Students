@@ -6,6 +6,8 @@ import Teacher from "../sc/teacher/Teacher.vue";
 import Classes from "../sc/BanjiClass/classes.vue"
 import course from "../sc/Course/course.vue"
 import score from "../sc/score/score.vue";
+import StatisticsTeacher from "../statistics/teacher/statisticsTeacher.vue";
+import StatisticsClasses from "../statistics/banJiClass/statisticsClasses.vue";
 
 Vue.use(Router)
 
@@ -40,6 +42,16 @@ export default new Router({
           path: '/score',//跳转的地址
           name: 'score',
           component: score
+        },
+        {
+          path: '/statisticsTeacher',//跳转的地址
+          name: 'statisticsTeacher',
+          component: StatisticsTeacher
+        },
+        {
+          path:'/statisticsClasses',
+          name:'statisticsClasses',
+          component:StatisticsClasses
         },
       ]
     }

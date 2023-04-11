@@ -32,13 +32,14 @@ export default {
   },
   watch: {
     uploadObject: {
+      /**
+       * 监听对象属性变化
+       * @param val
+       * @param oldVal
+       */
       handler: function (val, oldVal) {
         console.log("watch==>",val)
-        if(val.fileName){
-          this.imageUrlShow=true;
-        }else{
-          this.imageUrlShow=false;
-        }
+        this.imageUrlShow = !!val.fileName;
       },
       deep: true
     }
@@ -57,6 +58,9 @@ export default {
       return isLt2M;
     },
   },
+  /**
+   * 计算属性
+   */
   computed: {
     imageUrl() {
       // alert("计算图片：")
