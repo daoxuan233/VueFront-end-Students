@@ -39,7 +39,7 @@
     - 确保已经安装了Node.js（建议版本12及以上）。
     - 安装Vue CLI（如果尚未安装），可通过命令`npm install -g @vue/cli`进行安装。
 2. **项目安装与运行**
-    - 克隆项目代码到本地：`git clone [项目仓库地址]`。
+    - 克隆项目代码到本地：`git clone https://github.com/daoxuan233/VueFront-end-Students.git`。
     - 进入项目目录：`cd VueFront-end-Students`。
     - 安装项目依赖：`npm install`。
     - 启动项目开发服务器：`npm run serve`。
